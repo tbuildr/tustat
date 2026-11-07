@@ -1,6 +1,5 @@
 # Build output
-tnxs
-tnxs-test
+/tustat
 *.test
 
 # Go

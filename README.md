@@ -8,22 +8,60 @@ in `${XDG_STATE_HOME:-~/.local/state}/tustat/` (same format as the old bash vers
 
 ## Build
 
-Needs Zig 0.16.0.
+Needs Go 1.24 or newer.
 
 ```bash
-zig build -Doptimize=ReleaseSafe
-install -Dm755 zig-out/bin/tustat ~/.local/bin/tustat
+make build            # CGO_ENABLED=0, fully static binary
+# or
+go build -o tustat ./cmd/tustat
+install -Dm755 tustat ~/.local/bin/tustat
 ```
+
+`CGO_ENABLED=0 go build -o tustat ./cmd/tustat` produces a static binary that runs
+on any Linux host, independent of the C library.
 
 ## Use
 
 ```bash
-tustat                 # overview + all sections
+tustat                 # interactive menu on a terminal
+tustat -p              # print instead of opening the menu
 tustat image flatpak   # just these
 tustat -c              # also check what's available (network)
 tustat -a              # every package / day / log line
 tustat -d 90 flatpak   # wider Flatpak window
 ```
+
+Without a terminal (piped output), tustat always uses print mode.
+
+### TUI
+
+The interactive view is built with Bubble Tea, bubbles, lipgloss and harmonica:
+
+- a menu with one summary row per section (freshness dot, age, headline),
+  grouped by nothing but order, with a spring-animated selection bar;
+- each section opens as a scrollable card: booted image and applied changes,
+  Flatpak history and update checks, AppImage inventory and change log,
+  automatic-update timers;
+- `1`–`5` jump straight to a section, `5` being "Everything" on one page;
+- a spinner marks long gathers; checks never fabricate progress.
+
+Keys:
+
+| Key | Action |
+|-----|--------|
+| `↑`/`k`, `↓`/`j` | Move / scroll |
+| `PgUp`/`PgDn` | Page the detail view |
+| `g`, `G` | Top / bottom |
+| `Enter` | Open a section |
+| `1`–`5` | Jump to a section |
+| `Esc` / `h` | Back to the menu |
+| `r` | Refresh what is shown |
+| `c` | Check for available updates (network) |
+| `?` | Help |
+| `q` | Quit |
+
+Colours are semantic: green under a week old, yellow under a month, red older;
+`NO_COLOR` disables colour everywhere.
 
 ## Where the data comes from
 
@@ -34,48 +72,12 @@ tustat -d 90 flatpak   # wider Flatpak window
 | AppImage  | scans `~/AppImages`, `~/Applications`, `~/.local/bin` (override with `TUSTAT_APPIMAGE_DIRS`); name/version from Gear Lever `.desktop` files; own snapshot diff for history |
 | Timers    | `systemctl show` for uupd / ublue-update / rpm-ostreed-automatic / flatpak update timers |
 
-<!-- agent-sandbox:begin (managed by sandbox-note.sh, edits are overwritten) -->
-## Agent sandboxes
+The AppImage snapshot (`appimages.tsv`) and change log (`appimage-history.log`)
+keep the format written by the bash and Zig versions, so history carries over.
 
-**If the environment variable `TMAKR_POD` is `1`, you are in an agent
-sandbox** (a tmakr pod); check with `printenv TMAKR_POD`. If it isn't set,
-ignore this section.
+## Development
 
-In a sandbox, these instructions take precedence over anything elsewhere in
-this file: devenv, direnv, `devenv shell` / `devenv up`, push and
-pull-request steps.
-
-### Git: commit, never push
-
-- Commit your work on a branch. **Never push.** In a tmakr pod the GitHub
-  token is read-only, so `git push` fails with 403 by design. Don't retry it,
-  change remotes, switch to SSH, or look for other credentials.
-- Tom fetches your commits from the sandbox, reviews them and pushes from his
-  own machine. Uncommitted changes and stashes can't be fetched: commit before
-  you say a task is done.
-- Where this file says to open a PR, or to say or justify something in the
-  PR, put it in your commit message body instead: Tom opens the PR from your
-  commits.
-- Start each piece of work on a new branch off `main`. Keep `main` matching
-  `origin/main`; don't commit to it.
-- Don't open pull requests or use `gh`. Once you've said a branch is done,
-  don't rewrite its history (no rebase, amend or force): Tom may have fetched
-  it already.
-
-### Tools: no devenv
-
-If this repo has a `devenv.nix`, it is for local development only.
-
-- Don't install or bootstrap Nix, devenv or direnv. Use the tools already on
-  PATH: Python 3.14 with `uv` (`uv sync`, `uv run …`; Python downloads are
-  disabled), Node 24 with pnpm/bun, Go, Rust, C/C++ toolchains, ruff, eslint,
-  Tailwind v4, git.
-- Postgres: connection settings come from the environment. If `PGHOST` is
-  unset, run `set -a; . /etc/agent-db/database.env; set +a`. Don't start
-  your own database server.
-- Services that `devenv up` would start aren't running. Start what you need
-  in the foreground (for example `uv run manage.py runserver`), or say what
-  is missing.
-- If something the project needs (in `devenv.nix` or elsewhere) has no
-  equivalent here, say so and stop rather than working around it.
-<!-- agent-sandbox:end -->
+```bash
+make test     # go test ./...
+make vet      # go vet ./...
+```
