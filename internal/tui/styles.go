@@ -3,7 +3,7 @@ package tui
 import "github.com/charmbracelet/lipgloss"
 
 // Palette: restrained ANSI colours that follow the terminal theme, with
-// the same blue accent the rest of the tbzos tooling uses.
+// the same blue accent the rest of the vertos tooling uses.
 var (
 	colAccent = lipgloss.Color("4")
 	colOK     = lipgloss.Color("2")

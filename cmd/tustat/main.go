@@ -1,4 +1,4 @@
-// Command tustat shows when updates were last applied on tbzos: the booted
+// Command tustat shows when updates were last applied on vertos: the booted
 // image, Flatpak, AppImages and the automatic-update timers.
 package main
 

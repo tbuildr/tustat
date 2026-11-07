@@ -1,4 +1,4 @@
-// Package status gathers update status for tbzos: the booted ostree image,
+// Package status gathers update status for vertos: the booted ostree image,
 // Flatpak history, AppImages on disk and the automatic-update timers.
 //
 // It is read-only apart from the AppImage snapshot and change log under

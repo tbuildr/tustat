@@ -207,7 +207,7 @@ func printStatus(env Env, o status.Options, data status.Data, secs []status.Sect
 
 const usageText = `Usage: tustat [options] [image] [flatpak] [appimage] [timers]
 
-Shows when updates were last applied on tbzos, and what was applied.
+Shows when updates were last applied on vertos, and what was applied.
 On a terminal with no sections given, opens an interactive menu.
 Otherwise prints the requested sections (all if none) and exits.
 
